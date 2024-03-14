@@ -7,3 +7,104 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Hotel {
+  id          String @id @default(uuid()) @db.Uuid
+  name        String @unique @db.VarChar(100)
+  description String
+  rating      Float
+  adress      Adress @relation(fields: [adressId], references: [id])
+  adressId    String
+  Room        Room[]
+}
+
+model Adress {
+  id      String  @id @default(uuid()) @db.Uuid
+  street  String
+  city    String
+  zip     String
+  country String
+  hotels  Hotel[]
+}
+
+model Room {
+  id       String    @id @default(uuid()) @db.Uuid
+  title    String
+  type     RoomType  @default(STANDART)
+  hotel    Hotel     @relation(fields: [hotelId], references: [id])
+  hotelId  String
+  bookings Booking[]
+}
+
+enum RoomType {
+  ECONOM
+  STANDART
+  LUX
+}
+
+model Booking {
+  id            String        @id @default(uuid()) @db.Uuid
+  status        BookingStatus @default(ACCEPTED)
+  startDate     DateTime
+  endDate       DateTime
+  personsAmount Int           @db.SmallInt
+  contactPhone  String        @db.VarChar(20)
+  room          Room          @relation(fields: [roomId], references: [id])
+  roomId        String
+  review        Review        @relation(fields: [reviewId], references: [id])
+  reviewId      String
+  visitor       Visitor       @relation(fields: [visitorId], references: [id])
+  visitorId     String
+  payment       Payment       @relation(fields: [paymentId], references: [id])
+  paymentId     String
+  promo         Promo         @relation(fields: [promoId], references: [id])
+  promoId       String
+}
+
+enum BookingStatus {
+  ACCEPTED
+  PENDING
+  REJECTED
+}
+
+model Review {
+  id       String    @id @default(uuid()) @db.Uuid
+  text     String
+  mart     Int       @db.SmallInt
+  bookings Booking[]
+}
+
+model Visitor {
+  id        String    @id @default(uuid()) @db.Uuid
+  lastName  String?   @db.VarChar(50)
+  firstName String?   @db.VarChar(50)
+  email     String    @unique
+  password  String    @db.VarChar(20)
+  bookings  Booking[]
+}
+
+model Payment {
+  id          String        @id @default(uuid()) @db.Uuid
+  amount      Float
+  paymentDate DateTime
+  status      PaymentStatus @default(PAID)
+  bookings    Booking[]
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  CANCELED
+}
+
+model Promo {
+  id       String      @id @default(uuid()) @db.Uuid
+  code     String      @unique
+  discount Float
+  status   PromoStatus @default(ACTIVE)
+  bookings Booking[]
+}
+
+enum PromoStatus {
+  ACTIVE
+  DISABLED
+}
